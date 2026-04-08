@@ -1,0 +1,5 @@
+appParams:
+  replicaCount: 2
+  bgColor: "#ccffcc"
+  greeting: "Hello from deploy by helm chart =)"
+  version: "v2.0"
