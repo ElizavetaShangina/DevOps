@@ -1,0 +1,38 @@
+# 1: Запуск пайплайна на любое действие во всех ветках
+on: [push, pull_request]
+
+jobs:
+  lint:
+    # 2: Использование latest-версий образов и экшенов (может сломаться при обновлении)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@latest
+      - run: echo "Проверка кода..."
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@latest
+      # 3: Отключение падения пайплайна при ошибке в тестах
+      - run: echo "Запуск тестов..." && exit 1
+        continue-on-error: true 
+
+  build:
+    runs-on: ubuntu-latest
+    # 4: Отсутствие зависимостей. Эта джоба запустится параллельно с тестами, а не после них
+    steps:
+      - uses: actions/checkout@latest
+      # 5: Отсутствие кэширования
+      - run: pip install -r requirements.txt
+      - run: echo "Сборка Docker образа..."
+
+  deploy-staging:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Деплой на Staging..."
+
+  deploy-prod:
+    runs-on: ubuntu-latest
+    steps:
+      # 6: Хардкод секретов
+      - run: echo "Деплой на прод с паролем SecretPassword123!"
