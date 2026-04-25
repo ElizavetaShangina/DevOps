@@ -1,0 +1,51 @@
+# fix 1: Запуск только при пуше в главную ветку
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  lint:
+    # fix 2: Фиксация версий окружения и экшенов
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Проверка кода..."
+
+  test:
+    needs: lint # fix 4: Выстраиваение цепочки. Тесты ждут линтер
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      # fix 3: Убран continue-on-error. Если упали тесты, то весь деплой остановится
+      - run: echo "Запуск тестов..."
+
+  build:
+    needs: test # Ожидание тестов
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      # Исправление 5: Использование кэш для зависимостей
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+      - run: echo "Сборка Docker образа..."
+
+  deploy-staging:
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      - run: echo "Деплой на Staging..."
+
+  deploy-prod:
+    needs: deploy-staging
+    # Защита: деплой на прод только после ручного подтверждения (или из окружения)
+    environment: production
+    runs-on: ubuntu-22.04
+    steps:
+      # fix 6: Секреты берутся из хранилища GitHub Secrets
+      - run: echo "Деплой на прод..."
+        env:
+          PROD_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
