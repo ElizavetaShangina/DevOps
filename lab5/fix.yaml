@@ -1,0 +1,10 @@
+kubeControllerManager:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeScheduler:
+  enabled: false
+
+prometheus-node-exporter:
+  hostRootFsMount:
+    enabled: false
